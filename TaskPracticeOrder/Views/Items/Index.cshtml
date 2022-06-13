@@ -1,0 +1,60 @@
+﻿@model IEnumerable<TaskPracticeOrder.Models.ViewModels.ItemUnitViewModel>
+@*@model IEnumerable<TaskPracticeOrder.Models.Item>*@
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            Find by name: <input type="text" name="SearchString" value="@ViewData["DataFilter"]" />
+            <input type="submit" value="Search" class="btn btn-default" /> |
+            <a asp-action="Index">Back to Full List</a>
+        </p>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+              <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["ItemNameSorting"]" asp-route-currentFilter="@ViewData["DataFilter"]">
+                   Last Name <i class="fas fa-sort-alt"></i></a>
+            </th>
+            <th>
+                Units
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["PriceSorting"]" asp-route-currentFilter="@ViewData["DataFilter"]">
+                    Price <i class="fas fa-sort-alt"></i></a>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @item.ItemName
+            </td>
+            <td>
+                @item.UnitType
+            </td>
+         
+            <td>
+                @item.Price
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.ItemId">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@item.ItemId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
