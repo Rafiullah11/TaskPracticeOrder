@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
+#nullable disable
 
 namespace TaskPracticeOrder.Models
 {
@@ -6,10 +9,9 @@ namespace TaskPracticeOrder.Models
     {
         public int ItemId { get; set; }
         public string ItemName { get; set; }
-        public int Price { get; set; }
+        public decimal Price { get; set; }
 
-        public  ICollection<UnitItem> UnitItems { get; set; }=new HashSet<UnitItem>();
-
-
+        public virtual ICollection<ItemUnit> ItemUnits { get; set; }
+        public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
 }

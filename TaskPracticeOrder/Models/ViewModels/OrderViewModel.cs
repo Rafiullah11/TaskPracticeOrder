@@ -8,7 +8,7 @@ namespace TaskPracticeOrder.Models.ViewModels
         public int Id { get; set; }
         public ICollection<Order> Orders { get; set; }
         public ICollection<OrderItem> orderItems { get; set; }
-        public ICollection<UnitItem> UnitItems { get; set; }
+        public ICollection<ItemUnit> ItemUnits { get; set; }
         public int ItemId { get; set; }
         public DateTime OrderDate { get; set; }
         public int UnitId { get; set; }

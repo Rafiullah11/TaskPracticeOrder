@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TaskPracticeOrder.Migrations
 {
-    public partial class Test : Migration
+    public partial class add : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,7 @@ namespace TaskPracticeOrder.Migrations
                     ItemId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ItemName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Price = table.Column<int>(type: "int", nullable: false)
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -27,7 +27,8 @@ namespace TaskPracticeOrder.Migrations
                 {
                     OrderId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Quantity = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
@@ -49,17 +50,48 @@ namespace TaskPracticeOrder.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrderItem",
+                columns: table => new
+                {
+                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    UnitId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TotalPrice = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderItem", x => new { x.ItemId, x.OrderId });
+                    table.ForeignKey(
+                        name: "FK_OrderItem_Items_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "Items",
+                        principalColumn: "ItemId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderItem_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderItem_Units_UnitId",
+                        column: x => x.UnitId,
+                        principalTable: "Units",
+                        principalColumn: "UnitId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UnitItem",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
                     ItemId = table.Column<int>(type: "int", nullable: false),
                     UnitId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UnitItem", x => x.Id);
+                    table.PrimaryKey("PK_UnitItem", x => new { x.UnitId, x.ItemId });
                     table.ForeignKey(
                         name: "FK_UnitItem_Items_ItemId",
                         column: x => x.ItemId,
@@ -74,53 +106,20 @@ namespace TaskPracticeOrder.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "OrderItem",
-                columns: table => new
-                {
-                    OI_Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    ItemUnitID = table.Column<int>(type: "int", nullable: false),
-                    OrderItemID = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrderItem", x => x.OI_Id);
-                    table.ForeignKey(
-                        name: "FK_OrderItem_Orders_OrderItemID",
-                        column: x => x.OrderItemID,
-                        principalTable: "Orders",
-                        principalColumn: "OrderId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_OrderItem_UnitItem_ItemUnitID",
-                        column: x => x.ItemUnitID,
-                        principalTable: "UnitItem",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItem_OrderId",
+                table: "OrderItem",
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItem_ItemUnitID",
+                name: "IX_OrderItem_UnitId",
                 table: "OrderItem",
-                column: "ItemUnitID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrderItem_OrderItemID",
-                table: "OrderItem",
-                column: "OrderItemID");
+                column: "UnitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UnitItem_ItemId",
                 table: "UnitItem",
                 column: "ItemId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UnitItem_UnitId",
-                table: "UnitItem",
-                column: "UnitId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -129,10 +128,10 @@ namespace TaskPracticeOrder.Migrations
                 name: "OrderItem");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "UnitItem");
 
             migrationBuilder.DropTable(
-                name: "UnitItem");
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "Items");

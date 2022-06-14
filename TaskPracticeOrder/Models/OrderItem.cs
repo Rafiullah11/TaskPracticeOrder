@@ -1,17 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+#nullable disable
 
 namespace TaskPracticeOrder.Models
+
 {
     public class OrderItem
     {
         [Key]
-        public int OI_Id { get; set; }
-        public decimal Price { get; set; }
+        public int UnitId { get; set; }
+        public int OrderId { get; set; }
+        public int ItemId { get; set; }
         public int Quantity { get; set; }
-        public int ItemUnitID { get; set; }
-        public int OrderItemID { get; set; }
-        public decimal GrandTotal { get { return Quantity * Price; } }
-        public virtual UnitItem UnitItem { get; set; }
+        public virtual Item Item { get; set; }
+        public virtual Unit Unit { get; set; }
         public virtual Order Order { get; set; }
     }
 }

@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
+#nullable disable
 
 namespace TaskPracticeOrder.Models
+
 {
-    public class UnitItem
+    public class ItemUnit
     {
-        public int Id { get; set; }
         public int ItemId { get; set; }
         public int UnitId { get; set; }
-        public int OrderItemId { get; set; }
+
         public virtual Item Item { get; set; }
         public virtual Unit Unit { get; set; }
-        public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
 }

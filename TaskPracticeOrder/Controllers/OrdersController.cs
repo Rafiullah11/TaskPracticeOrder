@@ -28,7 +28,7 @@ namespace TaskPracticeOrder.Controllers
             ViewData["DataFilter"] = searchString;
 
             var data = (from Item in _context.Items
-                        join UnitItem in _context.UnitItems on Item.ItemId equals UnitItem.ItemId
+                        join UnitItem in _context.ItemUnits on Item.ItemId equals UnitItem.ItemId
                         join Unit in _context.Units on UnitItem.UnitId equals Unit.UnitId
                         select new OrderViewModel
                         {
@@ -57,7 +57,7 @@ namespace TaskPracticeOrder.Controllers
         public IActionResult Create(int? id)
         {
             var items = (from item in _context.Items
-                         join UnitItem in _context.UnitItems on item.ItemId equals UnitItem.ItemId
+                         join UnitItem in _context.ItemUnits on item.ItemId equals UnitItem.ItemId
                          join unit in _context.Units on UnitItem.UnitId equals unit.UnitId
                          //join OrderItem in _context.OrderItems on UnitItem.OrderItemId equals OrderItem.OI_Id
                          select new OrderViewModel
@@ -67,90 +67,107 @@ namespace TaskPracticeOrder.Controllers
                              UnitType = unit.UnitType,
                              ItemName = item.ItemName,
                              Price = item.Price,
-                             
+
                          }).ToList();
 
             return View(items);
         }
 
         [HttpPost]
-        public async Task< IActionResult> Create(List<OrderViewModel> orderVM, int id)
+        public async Task<IActionResult> Create(List<OrderViewModel> orderViewModel, int id)
         {
-            //var order =  _context.Orders
-            //  .Include(o => o.OrderItems)
-            //  .Include(o => o.OrderItems)
-            //  .FirstOrDefaultAsync(m => m.OrderId == id);
+            var order = new Order();
+            order.Date = DateTime.Now;
 
-            var createOrder = new Order()
-            {
-                OrderDate = DateTime.UtcNow,
-            };
-            //var checkQuantity = orderVM.Select(x => x.Quantity).ToList();
+            var checkQty = orderViewModel.Where(x => x.Quantity == x.Quantity).Count();
 
-            var checkQty = orderVM.Where(x => x.Quantity ==x.Quantity).Count();
-
-            var selectedChk = orderVM.Select(x => x.ItemId).Count();
+            var selectedChk = orderViewModel.Select(x => x.ItemId).Count();
 
             if (checkQty != null && selectedChk > 0)
             {
 
-                foreach (var item in orderVM)
+                foreach (var item in orderViewModel)
                 {
-                    var UnitItemID = _context.UnitItems.Where(x => x.ItemId == item.ItemId).FirstOrDefault();
+                    var unitItemId = _context.ItemUnits.Where(x => x.ItemId == item.ItemId).FirstOrDefault();
 
-                    createOrder.OrderItems.Add(new OrderItem()
+
+                    order.OrderItems.Add(new OrderItem()
                     {
-                        ItemUnitID = UnitItemID.Id,
+                        ItemId = item.ItemId,
+                        UnitId = item.UnitId,
                         Quantity = item.Quantity,
-                        Price = item.Price * item.Quantity,
-                        OrderItemID = createOrder.OrderId,
+                        OrderId = order.OrderId,
                     });
-                    await _context.AddAsync(createOrder);
+                    await _context.AddAsync(order);
                 }
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(List<OrderViewModel> orderViewModel, int? id)
         {
-            //var sa= _context.Orders.Include(x=>x.OrderItems).ThenInclude(y=>y.UnitItem).ThenInclude()
 
             var orders = (from order in _context.Orders
-                         join OrderItem in _context.OrderItems on order.OrderId equals OrderItem.OrderItemID
-                         join UnitItem in _context.UnitItems on OrderItem.ItemUnitID equals UnitItem.ItemId
-                         join unit in _context.Units on UnitItem.UnitId equals unit.UnitId
-                         join Item in _context.Items on UnitItem.ItemId equals Item.ItemId
-                       select new OrderViewModel
-                         {   
-                             ItemId = Item.ItemId,
-                             UnitId = unit.UnitId,
-                             UnitType = unit.UnitType,
-                             ItemName = Item.ItemName,
-                             Price = OrderItem.Price,
-                             ItemUnitID=OrderItem.ItemUnitID,
-                             OrderItemID=OrderItem.OrderItemID,
-                             Quantity=OrderItem.Quantity,
-                             OrderId=order.OrderId
-                         }).ToList();
+                          join OrderItem in _context.OrderItems on order.OrderId equals OrderItem.OrderId
+                          join unit in _context.Units on OrderItem.UnitId equals unit.UnitId
+                          join Item in _context.Items on OrderItem.ItemId equals Item.ItemId
+                          select new OrderViewModel
+                          {
+                              ItemId = Item.ItemId,
+                              UnitId = unit.UnitId,
+                              UnitType = unit.UnitType,
+                              ItemName = Item.ItemName,
+                              Price = Item.Price,
 
-            return View(orders);
+                              OrderItemID = OrderItem.ItemId,
+                              Quantity = OrderItem.Quantity,
+                              OrderId = order.OrderId
+                          }).ToList();
+
+            return View( orders);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id,Order order)
+
+        public async Task<IActionResult> Edit(List<OrderViewModel> orderViewModel, int id)
         {
-           
-            return View(order);
+            if (orderViewModel.Count() == 0)
+            {
+                return NotFound();
+            }
+            var order = new Order();
+            order.Date = DateTime.Now;
+
+            var checkQty = orderViewModel.Where(x => x.Quantity == x.Quantity).Count();
+
+            var selectedChk = orderViewModel.Select(x => x.ItemId).Count();
+
+            if (checkQty != null && selectedChk > 0)
+            {
+                foreach (var item in orderViewModel)
+                {
+                    var unitItemId = _context.ItemUnits.Where(x => x.ItemId == item.ItemId).FirstOrDefault();
+
+                    order.OrderItems.Add(new OrderItem()
+                    {
+                        ItemId = item.ItemId,
+                        UnitId = item.UnitId,
+                        Quantity = item.Quantity,
+                        OrderId = order.OrderId,
+                    });
+                    _context.Update(order);
+                }
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Orders/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            return View();
-
+            var order = await _context.Orders.FindAsync(id);
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
-
-
     }
 }

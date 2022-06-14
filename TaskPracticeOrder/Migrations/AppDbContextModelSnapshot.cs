@@ -29,12 +29,27 @@ namespace TaskPracticeOrder.Migrations
                     b.Property<string>("ItemName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ItemId");
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("TaskPracticeOrder.Models.ItemUnit", b =>
+                {
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UnitId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("UnitItem");
                 });
 
             modelBuilder.Entity("TaskPracticeOrder.Models.Order", b =>
@@ -44,7 +59,7 @@ namespace TaskPracticeOrder.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("OrderDate")
+                    b.Property<DateTime?>("Date")
                         .HasColumnType("datetime2");
 
                     b.HasKey("OrderId");
@@ -54,28 +69,23 @@ namespace TaskPracticeOrder.Migrations
 
             modelBuilder.Entity("TaskPracticeOrder.Models.OrderItem", b =>
                 {
-                    b.Property<int>("OI_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ItemUnitID")
+                    b.Property<int>("ItemId")
                         .HasColumnType("int");
 
-                    b.Property<int>("OrderItemID")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
-
-                    b.Property<decimal?>("Price")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("OI_Id");
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("ItemUnitID");
+                    b.HasKey("ItemId", "OrderId");
 
-                    b.HasIndex("OrderItemID");
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UnitId");
 
                     b.ToTable("OrderItem");
                 });
@@ -95,60 +105,16 @@ namespace TaskPracticeOrder.Migrations
                     b.ToTable("Units");
                 });
 
-            modelBuilder.Entity("TaskPracticeOrder.Models.UnitItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UnitId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UnitId");
-
-                    b.ToTable("UnitItem");
-                });
-
-            modelBuilder.Entity("TaskPracticeOrder.Models.OrderItem", b =>
-                {
-                    b.HasOne("TaskPracticeOrder.Models.UnitItem", "UnitItem")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("ItemUnitID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskPracticeOrder.Models.Order", "Order")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("OrderItemID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("UnitItem");
-                });
-
-            modelBuilder.Entity("TaskPracticeOrder.Models.UnitItem", b =>
+            modelBuilder.Entity("TaskPracticeOrder.Models.ItemUnit", b =>
                 {
                     b.HasOne("TaskPracticeOrder.Models.Item", "Item")
-                        .WithMany("UnitItems")
+                        .WithMany("ItemUnits")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TaskPracticeOrder.Models.Unit", "Unit")
-                        .WithMany("UnitItems")
+                        .WithMany("ItemUnits")
                         .HasForeignKey("UnitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -158,9 +124,38 @@ namespace TaskPracticeOrder.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("TaskPracticeOrder.Models.OrderItem", b =>
+                {
+                    b.HasOne("TaskPracticeOrder.Models.Item", "Item")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskPracticeOrder.Models.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskPracticeOrder.Models.Unit", "Unit")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Unit");
+                });
+
             modelBuilder.Entity("TaskPracticeOrder.Models.Item", b =>
                 {
-                    b.Navigation("UnitItems");
+                    b.Navigation("ItemUnits");
+
+                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("TaskPracticeOrder.Models.Order", b =>
@@ -170,11 +165,8 @@ namespace TaskPracticeOrder.Migrations
 
             modelBuilder.Entity("TaskPracticeOrder.Models.Unit", b =>
                 {
-                    b.Navigation("UnitItems");
-                });
+                    b.Navigation("ItemUnits");
 
-            modelBuilder.Entity("TaskPracticeOrder.Models.UnitItem", b =>
-                {
                     b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618

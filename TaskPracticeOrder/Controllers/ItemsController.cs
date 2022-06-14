@@ -28,8 +28,8 @@ namespace TaskPracticeOrder.Controllers
             ViewData["DataFilter"] = searchString;
 
             var data = (from Item in _context.Items
-                        join UnitItem in _context.UnitItems on Item.ItemId equals UnitItem.ItemId
-                        join Unit in _context.Units on UnitItem.UnitId equals Unit.UnitId
+                        join ItemUnit in _context.ItemUnits on Item.ItemId equals ItemUnit.ItemId
+                        join Unit in _context.Units on ItemUnit.UnitId equals Unit.UnitId
                         select new ItemUnitViewModel
                         {
                             ItemName = Item.ItemName,
@@ -61,7 +61,7 @@ namespace TaskPracticeOrder.Controllers
         {
 
             var item = new ItemViewModel();
-                item.UnitItems = _context.UnitItems.ToList();
+                item.ItemUnits = _context.ItemUnits.ToList();
                 ViewBag.unitDD = new SelectList(_context.Units, "UnitId", "UnitType");
 
                 return View(item);
@@ -77,7 +77,7 @@ namespace TaskPracticeOrder.Controllers
                     ItemId = vm.ItemId,
                     ItemName = vm.ItemName,
                     Price = vm.Price,
-                    UnitItems = vm.UnitItems,
+                    ItemUnits = vm.ItemUnits,
                 };
                 if (ModelState.IsValid)
                 {
@@ -87,7 +87,7 @@ namespace TaskPracticeOrder.Controllers
 
                 foreach (var unt in vm.SelectedUnit)
                 {
-                    UnitItem unitItem = new UnitItem();
+                    ItemUnit unitItem = new ItemUnit();
                     unitItem.ItemId = post.ItemId;
                     unitItem.UnitId = unt;
                     _context.Add(unitItem);
@@ -102,7 +102,7 @@ namespace TaskPracticeOrder.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             var item = await  _context.Items
-                .Include(p => p.UnitItems)
+                .Include(p => p.ItemUnits)
                 .Where(p => p.ItemId == id)
                 .FirstOrDefaultAsync();
             if (item == null) return View();
@@ -111,9 +111,9 @@ namespace TaskPracticeOrder.Controllers
             {
                 ItemId = item.ItemId,
                 ItemName = item.ItemName,
-                Price = item.Price,
-                UnitItems = _context.UnitItems.ToList(),
-                SelectedUnit = item.UnitItems.Select(pc => pc.UnitId).ToList()
+                //Price = item.Price,
+                ItemUnits = _context.ItemUnits.ToList(),
+                SelectedUnit = item.ItemUnits.Select(pc => pc.UnitId).ToList()
 
             };
             ViewBag.unitDD = new SelectList(_context.Units, "UnitId", "UnitType");
@@ -133,17 +133,17 @@ namespace TaskPracticeOrder.Controllers
 
             if (ModelState.IsValid)
             {
-                    var post = await _context.Items.Include(p => p.UnitItems)
+                    var post = await _context.Items.Include(p => p.ItemUnits)
                                              .Where(p => p.ItemId == id)
                                              .FirstOrDefaultAsync();
 
                     post.ItemName = vm.ItemName;
                     post.Price = vm.Price;
-                    post.UnitItems = new List<UnitItem>();
+                    post.ItemUnits = new List<ItemUnit>();
 
                     foreach (var unitId in vm.SelectedUnit)
                     {
-                        post.UnitItems.Add(new UnitItem { UnitId = unitId });
+                        post.ItemUnits.Add(new ItemUnit { UnitId = unitId });
                     }
                     await _context.SaveChangesAsync();
                     TempData["Editmessage"] = "Edited Successfully";
@@ -162,7 +162,7 @@ namespace TaskPracticeOrder.Controllers
             }
 
             var item = await _context.Items
-                .Include(i => i.UnitItems)
+                .Include(i => i.ItemUnits)
                 .FirstOrDefaultAsync(m => m.ItemId == id);
             if (item == null)
             {

@@ -10,6 +10,6 @@ namespace TaskPracticeOrder.Models.ViewModels
         public int Price { get; set; }
         public List<int> SelectedUnit { get; set; }
 
-        public ICollection<UnitItem> UnitItems { get; set; }
+        public ICollection<ItemUnit> ItemUnits { get; set; }
     }
 }
